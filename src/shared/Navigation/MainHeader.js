@@ -1,6 +1,7 @@
 import React from "react";
 
 import { Layout, Menu } from "antd";
+import { Link } from "react-router-dom";
 const { Header } = Layout;
 
 const MainHeader = () => {
@@ -14,7 +15,7 @@ const MainHeader = () => {
         items={[
           {
             key: "products",
-            label: "Products",
+            label: <Link to="/products">Products</Link>,
           },
           {
             key: "warehouses",
