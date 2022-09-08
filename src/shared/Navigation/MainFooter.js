@@ -4,7 +4,11 @@ import { Layout } from "antd";
 const { Footer } = Layout;
 
 const MainFooter = () => {
-  return <Footer></Footer>;
+  return (
+    <Footer
+      style={{ position: "absolute", bottom: "10px" }}
+    ></Footer>
+  );
 };
 
 export default MainFooter;
