@@ -1,11 +1,34 @@
 import React, { useEffect, useState } from "react";
-import { Space, Table } from "antd";
+import { Space, Table, Button } from "antd";
 
 import { useHttpClient } from "../../shared/hooks/http-hook";
 
 const Products = () => {
   const { sendRequest, clearError, error, isLoading } = useHttpClient();
   const [productList, setProductList] = useState(null);
+
+  const deleteHandler = (id) => {
+    console.log(id);
+  };
+
+  useEffect(() => {
+    const getProducts = async () => {
+      try {
+        const responseData = await sendRequest(
+          process.env.REACT_APP_BACKEND_URL + `/api/Products/`
+        );
+        responseData.items.forEach((item) => {
+          item.key = item._id;
+          item.warehouse = item.warehouse.name;
+        });
+        setProductList(responseData.items);
+      } catch (err) {
+        throw new Error(err.message);
+      }
+    };
+
+    getProducts();
+  }, [sendRequest]);
 
   const columns = [
     {
@@ -28,31 +51,18 @@ const Products = () => {
       key: "action",
       render: (_, record) => (
         <Space size="middle">
-          <a>Update</a>
-          <a>Delete</a>
+          <Button type="primary">Update</Button>
+          <Button
+            type="primary"
+            danger
+            onClick={() => deleteHandler(record._id)}
+          >
+            Delete
+          </Button>
         </Space>
       ),
     },
   ];
-
-  useEffect(() => {
-    const getProducts = async () => {
-      try {
-        const responseData = await sendRequest(
-          `http://localhost:4000/api/Products/`
-        );
-        responseData.items.forEach((item) => {
-          item.key = item._id;
-          item.warehouse = item.warehouse.name;
-        });
-        setProductList(responseData.items);
-      } catch (err) {
-        throw new Error(err.message);
-      }
-    };
-
-    getProducts();
-  }, [sendRequest]);
 
   return <Table columns={columns} dataSource={productList} />;
 };
