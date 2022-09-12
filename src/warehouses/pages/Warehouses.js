@@ -64,8 +64,7 @@ const Warehouses = () => {
   const updateEdit = (record) => {
     form.setFieldsValue({
       name: "",
-      age: "",
-      address: "",
+      location: "",
       ...record,
     });
     setEditingKey(record.key);
