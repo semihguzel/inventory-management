@@ -1,78 +1,16 @@
 import React, { useEffect, useState, useContext } from "react";
-import {
-  Button,
-  Space,
-  Table,
-  Modal,
-  Input,
-  Form,
-  Typography,
-  Popconfirm,
-} from "antd";
 
 import { useHttpClient } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
 
 import "./Warehouses.css";
-
-const EditableCell = ({
-  editing,
-  dataIndex,
-  title,
-  inputType,
-  record,
-  index,
-  children,
-  ...restProps
-}) => {
-  return (
-    <td {...restProps}>
-      {editing ? (
-        <Form.Item
-          name={dataIndex}
-          style={{
-            margin: 0,
-          }}
-          rules={[
-            {
-              required: true,
-              message: `Please Input ${title}!`,
-            },
-          ]}
-        >
-          <Input />
-        </Form.Item>
-      ) : (
-        children
-      )}
-    </td>
-  );
-};
+import EditableTable from "../../shared/FormElements/EditableTable";
 
 const Warehouses = () => {
   const auth = useContext(AuthContext);
   const { sendRequest, error, clearError } = useHttpClient();
 
-  const [form] = Form.useForm();
   const [warehouseList, setWarehouseList] = useState(null);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedItemId, setSelectedItemId] = useState(null);
-  const [editingKey, setEditingKey] = useState("");
-
-  const isEditing = (record) => record.key === editingKey;
-
-  const updateEdit = (record) => {
-    form.setFieldsValue({
-      name: "",
-      location: "",
-      ...record,
-    });
-    setEditingKey(record.key);
-  };
-
-  const updateCancel = () => {
-    setEditingKey("");
-  };
 
   const updateWarehouse = async (entity) => {
     if (entity && entity.id && entity.updateValues) {
@@ -92,33 +30,6 @@ const Warehouses = () => {
     }
   };
 
-  const updateSave = async (key) => {
-    try {
-      const row = await form.validateFields();
-      const newData = [...warehouseList];
-      const index = newData.findIndex((item) => key === item.key);
-
-      if (index > -1) {
-        await updateWarehouse({ id: key, updateValues: row });
-        const item = newData[index];
-        newData.splice(index, 1, { ...item, ...row });
-        setWarehouseList(newData);
-        setEditingKey("");
-      } else {
-        newData.push(row);
-        setWarehouseList(newData);
-        setEditingKey("");
-      }
-    } catch (err) {
-      throw new Error(err.message);
-    }
-  };
-
-  const showModal = (selectedItemId) => {
-    setIsModalOpen(true);
-    setSelectedItemId(selectedItemId);
-  };
-
   const getWarehouses = async () => {
     try {
       const responseData = await sendRequest(
@@ -133,8 +44,7 @@ const Warehouses = () => {
     }
   };
 
-  const handleDeleteOk = async () => {
-    setIsModalOpen(false);
+  const handleDeleteOk = async (selectedItemId) => {
     if (selectedItemId) {
       try {
         await sendRequest(
@@ -155,41 +65,6 @@ const Warehouses = () => {
     }
   };
 
-  const handleDeleteCancel = () => {
-    setIsModalOpen(false);
-  };
-
-  const updateColumn = (record) => {
-    const editable = isEditing(record);
-
-    return editable ? (
-      <span>
-        <Button
-          onClick={() => updateSave(record.key)}
-          style={{
-            marginRight: 8,
-          }}
-          type="primary"
-        >
-          Save
-        </Button>
-        <Popconfirm title="Sure to cancel?" onConfirm={updateCancel}>
-          <Button danger>
-            Cancel
-          </Button>
-        </Popconfirm>
-      </span>
-    ) : (
-      <Button
-        disabled={editingKey !== ""}
-        onClick={() => updateEdit(record)}
-        type="primary"
-      >
-        Update
-      </Button>
-    );
-  };
-
   const columns = [
     {
       title: "Warehouse Name",
@@ -203,66 +78,20 @@ const Warehouses = () => {
       key: "location",
       editable: true,
     },
-    {
-      title: "Action",
-      key: "action",
-      render: (_, record) => (
-        <Space size="middle">
-          <Modal
-            title="Delete"
-            open={isModalOpen}
-            onOk={handleDeleteOk}
-            onCancel={handleDeleteCancel}
-          >
-            <p>Do you want to delete?</p>
-          </Modal>
-          {updateColumn(record)}
-          <Button type="primary" danger onClick={() => showModal(record._id)}>
-            Delete
-          </Button>
-        </Space>
-      ),
-    },
   ];
-
-  const mergedColumns = columns.map((col) => {
-    if (!col.editable) {
-      return col;
-    }
-
-    return {
-      ...col,
-      onCell: (record) => ({
-        record,
-        inputType: "text",
-        dataIndex: col.dataIndex,
-        title: col.title,
-        editing: isEditing(record),
-      }),
-    };
-  });
 
   useEffect(() => {
     getWarehouses();
   }, [sendRequest]);
 
   return (
-    <Form form={form} component={false}>
-      <Table
-        components={{
-          body: {
-            cell: EditableCell,
-          },
-        }}
-        bordered
-        columns={mergedColumns}
-        dataSource={warehouseList}
-        pagination={{
-          onChange: updateCancel,
-        }}
-        rowClassName="editable-row"
-      />
-    </Form>
+    <EditableTable
+      tableList={warehouseList}
+      setTableList={setWarehouseList}
+      handleDeleteOk={handleDeleteOk}
+      updateTableList={updateWarehouse}
+      tableColumns={columns}
+    />
   );
 };
 
