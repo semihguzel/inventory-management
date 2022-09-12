@@ -10,6 +10,8 @@ import {
   Popconfirm,
 } from "antd";
 
+import "./EditableTable.css";
+
 const EditableCell = ({
   editing,
   dataIndex,
@@ -98,7 +100,7 @@ const EditableTable = (props) => {
   const onHandleDeleteOk = () => {
     setIsModalOpen(false);
     props.handleDeleteOk(selectedItemId);
-  }
+  };
 
   const actionColumn = {
     title: "Action",

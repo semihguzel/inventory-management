@@ -3,7 +3,6 @@ import React, { useEffect, useState, useContext } from "react";
 import { useHttpClient } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
 
-import "./Warehouses.css";
 import EditableTable from "../../shared/FormElements/EditableTable";
 
 const Warehouses = () => {
