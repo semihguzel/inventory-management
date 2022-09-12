@@ -164,25 +164,29 @@ const Warehouses = () => {
 
     return editable ? (
       <span>
-        <Typography.Link
+        <Button
           onClick={() => updateSave(record.key)}
           style={{
             marginRight: 8,
           }}
+          type="primary"
         >
           Save
-        </Typography.Link>
+        </Button>
         <Popconfirm title="Sure to cancel?" onConfirm={updateCancel}>
-          <a>Cancel</a>
+          <Button danger>
+            Cancel
+          </Button>
         </Popconfirm>
       </span>
     ) : (
-      <Typography.Link
+      <Button
         disabled={editingKey !== ""}
         onClick={() => updateEdit(record)}
+        type="primary"
       >
         Update
-      </Typography.Link>
+      </Button>
     );
   };
 
