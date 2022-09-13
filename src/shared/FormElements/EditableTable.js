@@ -8,6 +8,7 @@ import {
   Form,
   Typography,
   Popconfirm,
+  Select,
 } from "antd";
 
 import "./EditableTable.css";
@@ -20,8 +21,24 @@ const EditableCell = ({
   record,
   index,
   children,
+  data,
+  onSelect,
   ...restProps
 }) => {
+  let renderElement;
+  if (inputType === "text") {
+    renderElement = <Input />;
+  } else if (inputType === "select") {
+    renderElement = (
+      <Select onSelect={onSelect}>
+        {data.map((item) => (
+          <Select.Option key={item.key} value={item.name}>
+            {item.name}
+          </Select.Option>
+        ))}
+      </Select>
+    );
+  }
   return (
     <td {...restProps}>
       {editing ? (
@@ -37,7 +54,7 @@ const EditableCell = ({
             },
           ]}
         >
-          <Input />
+          {renderElement}
         </Form.Item>
       ) : (
         children
@@ -135,10 +152,12 @@ const EditableTable = (props) => {
           ...col,
           onCell: (record) => ({
             record,
-            inputType: "text",
+            inputType: col.inputType,
             dataIndex: col.dataIndex,
             title: col.title,
             editing: isEditing(record),
+            data: col.data,
+            onSelect: col.onSelect,
           }),
         };
       })
