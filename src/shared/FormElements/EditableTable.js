@@ -119,10 +119,33 @@ const EditableTable = (props) => {
     props.handleDeleteOk(selectedItemId);
   };
 
-  const actionColumn = {
-    title: "Action",
-    key: "action",
-    render: (_, record) => (
+  const newDataDeleteOkHandler = () => {
+    const data = props.tableList.filter(
+      (item) => item._id !== props.newData._id
+    );
+    props.setTableList(data);
+    props.setNewData(null);
+  };
+
+  const newDataCreateHandler = async () => {
+    const row = await form.validateFields();
+    await props.createNewEntity(row);
+  };
+
+  const newDataActions = () => {
+    return (
+      <Space size="middle">
+        <Button type="success" onClick={newDataCreateHandler}>
+          Create
+        </Button>
+        <Button type="primary" danger onClick={newDataDeleteOkHandler}>
+          Delete
+        </Button>
+      </Space>
+    );
+  };
+  const columnActions = (record) => {
+    return (
       <Space size="middle">
         <Modal
           title="Delete"
@@ -137,7 +160,19 @@ const EditableTable = (props) => {
           Delete
         </Button>
       </Space>
-    ),
+    );
+  };
+
+  const actionColumn = {
+    title: "Action",
+    key: "action",
+    render: (_, record) => {
+      if (props.newData && record.key === props.newData.key) {
+        return newDataActions();
+      } else {
+        return columnActions(record);
+      }
+    },
   };
 
   useEffect(() => {
@@ -193,6 +228,11 @@ const EditableTable = (props) => {
     );
   };
 
+  const handleRowAdd = async () => {
+    const newData = await props.handleRowAdd();
+    updateEdit(newData);
+  };
+
   return (
     <Form form={form} component={false}>
       <Table
@@ -209,6 +249,16 @@ const EditableTable = (props) => {
         }}
         rowClassName="editable-row"
       />
+      <Button
+        disabled={props.newData}
+        onClick={handleRowAdd}
+        type="primary"
+        style={{
+          marginBottom: 16,
+        }}
+      >
+        Add a row
+      </Button>
     </Form>
   );
 };
