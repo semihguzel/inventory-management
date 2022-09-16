@@ -4,6 +4,7 @@ import { Space, Table, Button } from "antd";
 import { useHttpClient } from "../../shared/hooks/http-hook";
 import { AuthContext } from "../../shared/context/auth-context";
 import EditableTable from "../../shared/FormElements/EditableTable";
+import { v4 as uuidv4 } from "uuid";
 
 const Products = () => {
   const auth = useContext(AuthContext);
@@ -12,6 +13,7 @@ const Products = () => {
   const [productList, setProductList] = useState(null);
   const [warehouseList, setWarehouseList] = useState(null);
   const [selectedWarehouseId, setSelectedWarehouseId] = useState(null);
+  const [newData, setNewData] = useState(null);
 
   const getProducts = async () => {
     try {
@@ -94,7 +96,6 @@ const Products = () => {
   };
 
   const onWarehouseSelected = (value, record) => {
-    debugger;
     setSelectedWarehouseId(record.key);
   };
 
@@ -129,6 +130,54 @@ const Products = () => {
     },
   ];
 
+  const handleRowAdd = async () => {
+    const uuid = uuidv4();
+    const newRowData = {
+      key: uuid,
+      _id: uuid,
+      name: "New Cell",
+      description: "New Cell",
+      warehouse: warehouseList.length > 0 ? warehouseList[0].name : "",
+      editable: true,
+      inputType: "text",
+    };
+    setNewData(newRowData);
+    setProductList([...productList, newRowData]);
+
+    return newRowData;
+  };
+
+  const createNewProduct = async (createEntity) => {
+    if (newData && createEntity) {
+      const warehouse = warehouseList.find(
+        (item) => item.name === createEntity.warehouse
+      );
+      if (!warehouse)
+        throw new Error("There has been an error when creating product.");
+
+      const productEntity = {
+        name: createEntity.name,
+        description: createEntity.description,
+        warehouseId: warehouse._id,
+      };
+      try {
+        await sendRequest(
+          `${process.env.REACT_APP_BACKEND_URL}/api/products`,
+          "POST",
+          JSON.stringify(productEntity),
+          {
+            "Content-Type": "application/json",
+            Authorization: "Bearer " + auth.token,
+          }
+        );
+      } catch (err) {
+        throw new Error(err.message);
+      }
+      setNewData(null);
+      getProducts();
+    }
+  };
+
   return (
     <EditableTable
       tableList={productList}
@@ -136,6 +185,10 @@ const Products = () => {
       handleDeleteOk={handleDeleteOk}
       updateTableList={updateProduct}
       tableColumns={columns}
+      handleRowAdd={handleRowAdd}
+      newData={newData}
+      setNewData={setNewData}
+      createNewEntity={createNewProduct}
     />
   );
 };
