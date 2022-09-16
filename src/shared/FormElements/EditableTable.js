@@ -130,6 +130,7 @@ const EditableTable = (props) => {
   const newDataCreateHandler = async () => {
     const row = await form.validateFields();
     await props.createNewEntity(row);
+    setEditingKey("");
   };
 
   const newDataActions = () => {

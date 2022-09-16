@@ -100,7 +100,7 @@ const Warehouses = () => {
   ];
 
   const createNewWarehouse = async (createEntity) => {
-    if (newData) {
+    if (newData && createEntity) {
       try {
         await sendRequest(
           `${process.env.REACT_APP_BACKEND_URL}/api/warehouses`,
